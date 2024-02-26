@@ -1,4 +1,4 @@
-# Notes
+# Learning Notes
 
 - The root folder will be `C:/Users/Abhishek Sharma`
 - Variables in PHP are referred using the prefix sign `$`.
