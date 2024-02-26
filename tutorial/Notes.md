@@ -5,10 +5,10 @@
 
 ## Commands
 
-| Command                 | Description                       |
-| ----------------------- | --------------------------------- |
-| `php -v`                | Check the current version of PHP. |
-| `php -S localhost:4000` | Create a Web Server.              |
+| Command                 | Description                                                                           |
+| ----------------------- | ------------------------------------------------------------------------------------- |
+| `php -v`                | Check the current version of PHP.                                                     |
+| `php -S localhost:4000` | Create a Web Server. This command should be run globally to have access to all files. |
 
 ## Data Types
 
@@ -139,6 +139,69 @@ class Student
         $this->name = $name;
         $this->major = $major;
         $this->gpa = $gpa;
+    }
+}
+```
+
+## MySQL Connectivity
+
+### Prerequisite
+
+| Step | Description                                                          |
+| ---- | -------------------------------------------------------------------- |
+| 1    | In the PHP directory, find `php.ini-development` file.               |
+| 2    | Rename this file to `php.ini` and open in notepad.                   |
+| 3    | Search for `extension_dir = "ext"` (for windows) and uncomment this. |
+| 4    | Search for `extension=mysqli` and uncomment this.                    |
+| 5    | Restart the PHP server.                                              |
+
+**NOTE**: Uncommenting here means removing the first semicolon ';' in the same line.
+
+### Connecting to MySQL DB:
+
+```php
+$conn = new mysqli(<HOST_NAME>, <USER_NAME>, <PASSWORD>, <DATABASE>);
+```
+
+### Fetching a SQL query result:
+
+In case of an Insertion / Updation / Deletion query:
+
+```php
+$result = mysqli_query($conn, $sql);
+
+if ($result) {
+    // On successfull insertion / updation, redirect to specific page.
+    header('location:user-list.php');
+} else {
+    // Show the error, what went wrong.
+    die(mysqli_error($conn));
+}
+```
+
+In case of a Select Query:
+
+```php
+$result = mysqli_query($conn, $sql);
+
+if (!$result) {
+    die(mysqli_error($conn));
+}
+
+// ...
+
+if ($users) {
+    // Loop over users result-set
+    while ($row = mysqli_fetch_assoc($users)) {
+
+        $id = $row['id'];
+        $name = $row['name'];
+        $email = $row['email'];
+        $mobile = $row['mobile'];
+        $password = $row['password'];
+
+        // Code to populate this date in HTML.
+
     }
 }
 ```
