@@ -205,3 +205,38 @@ if ($users) {
     }
 }
 ```
+
+## Fetch API Response
+
+Ref: [YouTube Tutorial]("https://www.youtube.com/watch?v=wMyP-q3nPd4")
+
+### Prerequisite
+
+Search for `extension=php_openssl` in `php.ini` file (as explained above) and uncomment it.
+
+### Various approach to call API
+
+#### `file-get-contents`
+
+- By default it gives a GET request to the URL specified but we can modify the HTTP Method, Request headers and Request Body (payload) by using `stream_context_create()` method.
+- The value returned by `file-get-contents()` method is the **body** of the API response.
+- Simple to use (Part of Core-PHP so it doesn't require any extension).
+
+**Disadvantages**:
+
+1. In case the API is invalid or endpoint is not working, the `file_get_contents()` method will simply return false.However, the API Response will contain useful information which it does not provide that can otherwise help us debug the issue. If the Reponse code is not in the 200 range, then there is no way to achieve the response body.
+
+2. Here, in order to add multiple request headers, we will have to concatenate all the header parameters separated by EOL characters like shown below. This is error-prone and is difficult to debug:
+
+```php
+$options = [
+    "http" => [
+        "method" => "PATCH",
+        "header" => "Content-type: application/json; charset=UTF-8\r\n" .
+                    "Accept-language: en",
+        "content" => $payload
+    ]
+]
+```
+
+3. Using `file_get_contents()` methods to retrieve URLs requires the `allow_url_fopen` setting to be enabled on cheap shared hosting so on servers like that it wouldn't work.
