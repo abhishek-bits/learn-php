@@ -212,7 +212,19 @@ Ref: [YouTube Tutorial]("https://www.youtube.com/watch?v=wMyP-q3nPd4")
 
 ### Prerequisite
 
-Search for `extension=php_openssl` in `php.ini` file (as explained above) and uncomment it.
+Open up `php.ini` file (as explained above) and uncomment the below:
+
+- `extension=php_openssl`
+- `extension=php_curl.dll`
+
+For `cURL` approach:
+
+- Download `cacert.pem` file from [curl.se](https://curl.se/docs/caextract.html) and place it in `/extras/ssl/` path within PHP installation folder.
+- Copy this path for `cacert.pem` file and set the below keys in `php.ini` file:
+  - `curl.cainfo`
+  - `openssl.cafile`
+- Uncomment the above keys in `php.ini` file.
+- Restart the PHP server.
 
 ### Various approach to call API
 
@@ -240,3 +252,199 @@ $options = [
 ```
 
 3. Using `file_get_contents()` methods to retrieve URLs requires the `allow_url_fopen` setting to be enabled on cheap shared hosting so on servers like that it wouldn't work.
+
+#### `cURL`
+
+- `cURL` is a PHP extension but there is no server which doesn't have this extension pre-installed.
+- It is the most common method used when calling the API from PHP.
+
+First we need to initialize the curl session using `curl_init()` function. This returns a handle to the cURL session.
+
+We can either pass the URL we want to request as a parameter:
+
+```php
+$curlHandle = curl_init("https://jsonplaceholder.typicode.com/albums/1");
+```
+
+OR, we can also send it as an option. To set an option, we call the `curl_setopt()` function.
+
+Ref: [curl-setopt](https://www.php.net/manual/en/function.curl-setopt.php)
+
+```php
+$curlHandle = curl_init();
+
+curl_setopt($curlHandle, CURLOPT_URL, "https://jsonplaceholder.typicode.com/albums/1");
+```
+
+Now, we want the response to be returned as string instead of being output directly. We do this by using `CURLOPT_RETURNTRANSFER` option:
+
+```php
+curl_setopt($curlHandle, CURLOPT_RETURNTRANSFER, true);
+```
+
+To execute this request, we now call the `curl_exec()` function by passing in the handle.
+
+```php
+$response = curl_exec($curlHandle);
+```
+
+Finally, we call the `curl_close()` method to close the handle.
+
+```php
+curl_close($curlHandle);
+```
+
+When using _cURL_ to set multiple options, there is an alternative way to set them which avoids calling `curl_setopt` multiple times. This is done using `curl_setopt_array()` method as shown:
+
+```php
+curl_setopt_array(
+    $curlHandle,
+    [
+        CURLOPT_URL => "https://jsonplaceholder.typicode.com/albums/1",
+        CURLOPT_RETURNTRANSFER => true
+    ]
+);
+```
+
+We can also change the Request headers in a similar manner. Let us now try to make a PATCH request to update the data similarly as we did before.
+
+```php
+$payload = json_encode([
+    "title" => "Updated title"
+]);
+```
+
+Notice here that now, we don't have to set any EOL characters to separate out the request headers.
+
+```php
+$headers = [
+    "Content-type: application/json; charset=UTF-8",
+    "Accept-language: en"
+]
+```
+
+Each header is simply a string element of the `$headers` array.
+
+```php
+curl_setopt_array(
+    $curlHandle,
+    [
+        CURLOPT_URL => "https://jsonplaceholder.typicode.com/albums/1",
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_CUSTOMREQUEST => "PATCH", // sets the HTTP Request method.
+        CURLOPT_POSTFIELDS => $payload, // sets the request body.
+        CURLOPT_HTTPHEADER => $headers, // sets the Headers for this API request.
+        CURLOPT_HEADER => true // if this is set to true then, all the response headers will be included in the response body.
+    ]
+);
+```
+
+**NOTE**: `POST` metho is set by default if we add a request body to the API request.
+
+To get details about the response, we use the `curl_getinfo() ` function.
+
+Ref: [curl-getinfo](https://www.php.net/manual/en/function.curl-getinfo.php)
+
+For example, to check the response status code, we pass in the `CURLINFO_HTTP_CODE` option:
+
+```php
+$status_code = curl_getinfo($curlHandle, CURLINFO_HTTP_CODE);
+```
+
+**Advantage**:
+
+- Unlike `file_get_contents()` method, here, if the API is invalid or endpoint is down, then we will still see all the required data in the response body.
+
+### Guzzle
+
+- It is a popular PHP HTTP Client.
+- It provides an easy-to-read object-oriented code.
+- "Object-Oriented" alternative to `cURL` for accessing APIs.
+
+To use this, first we need to install various package classes:
+
+Ref: [Guzzle Installation](https://docs.guzzlephp.org/en/stable/overview.html#installation)
+
+Now, to use Guzzle, we need to require various package classes.
+
+```php
+require __DIR__ . "/vendor/autoload.php";
+```
+
+Next, we need to create a Guzzle client object which is in the `GuzzleHttp` namespace.
+
+```php
+$client = new GuzzleHttp\Client();
+```
+
+Next, lets make a request to the API.
+
+```php
+$response = $client->request(
+    "GET",
+    "https://jsonplaceholder.typicode.com/albums/1"
+);
+```
+
+To get the response-body we call the `getBody()` method of the `$response` object. Since, this method returns an object so we'll parse it to string.
+
+```php
+var_dump((string) $response->getBody());
+```
+
+Now, let's see how we can make the `PATCH` request with the Request Headers and Request Body:
+
+First, we'll create the payload variable.
+
+```php
+$payload = json_encode([
+    "title" => "Updated title.";
+]);
+```
+
+Next, an array of headers. Unlike `cURL` headers in Guzzle are defined in an `associative-array` where, the key is a header-name and the value is the header-value as shown:
+
+```php
+$headers = [
+    "Content-type" => "application/json; charset=UTF-8"
+];
+```
+
+Next, we make changes to our request packet. Here, we instead call the `patch()` method whose first param is the URL and the second param is an `associative-array` containing the headers as the _headers_ key and request-body as the _body_ key.
+
+```php
+$response = $client->patch(
+    "https://jsonplaceholder.typicode.com/albums/1",
+    [
+        "headers" => $headers,
+        "body" => $payload
+    ]
+);
+```
+
+Again, to get the details of the request object, we call the `getStatusCode()` method of the `$response` object.
+
+```php
+var_dump($response->getStatusCode());
+```
+
+Response Headers can also be retrieved in a similar way.
+
+We can either retrieve all response headers at once using `getHeaders()` method of the `$response` object:
+
+```php
+var_dump($response->getHeaders());
+```
+
+OR, we can retrieve a specific header using `getHeader()` method:
+
+```php
+var_dump($response->getHeader("Content-type"));
+```
+
+**Advantage**:
+
+- Having request and response objects along with **clearly named methods** like these makes the code much more readable that `cURL` equivalent.
+- Simple to use yet powerful providing methods for all aspects of the Request and Response.
+
+**NOTE**: Using the `file_get_contents()` function, cURL and Guzzle, all use HTTP requests to access an API directly.
