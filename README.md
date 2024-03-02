@@ -223,7 +223,19 @@ if ($users) {
 #### Connecting to MySQL DB:
 
 ```php
-$conn = new mysqli(<HOST_NAME>, <USER_NAME>, <PASSWORD>, <DATABASE>);
+try {
+    $this->pdoConn = new PDO(
+        "mysql:host=$this->host;dbname=$this->db",
+        $this->user,
+        $this->pass
+    );
+    $this->pdoConn->setAttribute(
+        PDO::ATTR_ERRMODE,
+        PDO::ERRMODE_EXCEPTION
+    );
+} catch (PDOException $e) {
+    echo "Connection Failed: " . $e->getMessage();
+}
 ```
 
 #### Fetching a SQL query result:
@@ -231,31 +243,35 @@ $conn = new mysqli(<HOST_NAME>, <USER_NAME>, <PASSWORD>, <DATABASE>);
 In case of an Insertion / Updation / Deletion query:
 
 ```php
-$result = mysqli_query($conn, $sql);
+$db = DBConnect::getInstance();
+$pdoConn = $db->getConnection();
 
-if ($result) {
-    // On successfull insertion / updation, redirect to specific page.
-    header('location:user-list.php');
-} else {
-    // Show the error, what went wrong.
-    die(mysqli_error($conn));
-}
+$stmt = $pdoConn->prepare($sql);
+
+$result = $stmt->execute([
+    ':id' => $id
+]);
 ```
 
 In case of a Select Query:
 
 ```php
-$result = mysqli_query($conn, $sql);
+$db = DBConnect::getInstance();
+$pdoConn = $db->getConnection();
 
-if (!$result) {
-    die(mysqli_error($conn));
+$stmt = $pdoConn->prepare($sql);
+
+$result = $stmt->execute();
+
+if(!$result) {
+    die();
 }
 
 // ...
 
-if ($users) {
+if ($result) {
     // Loop over users result-set
-    while ($row = mysqli_fetch_assoc($users)) {
+     foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
 
         $id = $row['id'];
         $name = $row['name'];
