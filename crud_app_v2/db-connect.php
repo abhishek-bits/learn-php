@@ -16,10 +16,15 @@ class DBConnect
     // to set the $obj varaible initially to null.
     private static ?DBConnect $obj = null;
 
+    // private constructor prevents direct initialization
     private function __construct()
     {
         try {
-            $this->pdoConn = new PDO("mysql:host=$this->host;dbname=$this->db", $this->user, $this->pass);
+            $this->pdoConn = new PDO(
+                "mysql:host=$this->host;dbname=$this->db",
+                $this->user,
+                $this->pass
+            );
             $this->pdoConn->setAttribute(
                 PDO::ATTR_ERRMODE,
                 PDO::ERRMODE_EXCEPTION
@@ -27,6 +32,16 @@ class DBConnect
         } catch (PDOException $e) {
             echo "Connection Failed: " . $e->getMessage();
         }
+    }
+
+    // private clone method prevents cloning
+    private function __clone()
+    {
+    }
+
+    // private wakeup method prevents unserialization
+    private function __wakeup()
+    {
     }
 
     public static function getInstance()
