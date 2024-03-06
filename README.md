@@ -527,3 +527,18 @@ var_dump($response->getHeader("Content-type"));
 - Simple to use yet powerful providing methods for all aspects of the Request and Response.
 
 **NOTE**: Using the `file_get_contents()` function, cURL and Guzzle, all use HTTP requests to access an API directly.
+
+## Create RESTful API
+
+Create a file `.htdocs` in the same working directory and add the following content:
+
+```
+RewriteEngine On
+RewriteRule . index.php
+```
+
+The second line says that, no matter what URL is hit (specified by '.'), it will always load index.php script.
+
+**NOTE**: These rules are only valid for apache and compatible web servers.
+
+Create a directory `/src` where we shall keep all our source files.
