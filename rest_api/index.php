@@ -15,8 +15,11 @@ spl_autoload_register(function ($class) {
     require __DIR__ . "/src/$class.php";
 });
 
+// This method is used to set the error handler.
+set_error_handler("ErrorHandler::handle");
+
 // This method is used to set the exception handler.
-set_exception_handler("ExceptionHandler::handleException");
+set_exception_handler("ExceptionHandler::handle");
 
 // This is required to set the Content-type header to JSON
 // which by default is set to text.

@@ -2,7 +2,7 @@
 
 class ExceptionHandler
 {
-    public static function handleException(Throwable $exception): void
+    public static function handle(Throwable $exception): void
     {
         // First, set the HTTP Status Code.
         http_response_code(500);
