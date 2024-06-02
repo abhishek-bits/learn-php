@@ -287,7 +287,7 @@ if ($result) {
 
 ## Fetch API Response
 
-Ref: [YouTube Tutorial]("https://www.youtube.com/watch?v=wMyP-q3nPd4")
+Ref: [YouTube Tutorial](https://www.youtube.com/watch?v=wMyP-q3nPd4)
 
 ### Prerequisite
 
